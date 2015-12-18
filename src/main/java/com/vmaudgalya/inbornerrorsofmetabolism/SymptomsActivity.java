@@ -1,6 +1,7 @@
 package com.vmaudgalya.inbornerrorsofmetabolism;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.support.design.widget.FloatingActionButton;
@@ -12,20 +13,26 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class SymptomsActivity extends AppCompatActivity {
+
+  public static final String SYMPTOM_FILTERED_DISEASES = "com.vmaudgalya.inbornerrorsofmetabolism.SYMPTOM_FILTERED_DISEASES";
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_symptoms);
+    final Utility util = new Utility();
     Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
     setSupportActionBar(toolbar);
 
@@ -37,11 +44,7 @@ public class SymptomsActivity extends AppCompatActivity {
                 .setAction("Action", null).show();
       }
     });
-    String[] symptoms = {"Cold", "Cough", "Fever", "Headache", "Sore throat", "Stomach ache",
-            "Cold", "Cough", "Fever", "Headache", "Sore throat", "Stomach ache",
-            "Cold", "Cough", "Fever", "Headache", "Sore throat", "Stomach ache",
-            "Cold", "Cough", "Fever", "Headache", "Sore throat", "Stomach ache",
-            "Cold", "Cough", "Fever", "Headache", "Sore throat", "Stomach ache"};
+    String[] symptoms = util.getSymptoms();
     final ArrayList<String> selectedSymptoms = new ArrayList<String>();
 
     LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -54,6 +57,10 @@ public class SymptomsActivity extends AppCompatActivity {
     LinearLayout layout = new LinearLayout(this);
     layout.setOrientation(LinearLayout.VERTICAL);
 
+    TextView selectSymptomsTextView = new TextView(getApplicationContext());
+    selectSymptomsTextView.setText("Select Patient Symptoms");
+    layout.addView(selectSymptomsTextView);
+
     for (final String symptom : symptoms) {
       CheckBox checkBox = new CheckBox(getApplicationContext());
       checkBox.setText(symptom);
@@ -64,15 +71,29 @@ public class SymptomsActivity extends AppCompatActivity {
         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
           if (isChecked) {
             selectedSymptoms.add(symptom);
-            showToastNotification("Added " + symptom + " selected: " + selectedSymptoms.toString(), 1, false);
+//            showToastNotification("Added " + symptom + " selected: " + selectedSymptoms.toString(), 1, false);
           } else {
             selectedSymptoms.remove(symptom);
-            showToastNotification("Removed " + symptom + " selected: " + selectedSymptoms.toString(), 1, false);
+//            showToastNotification("Removed " + symptom + " selected: " + selectedSymptoms.toString(), 1, false);
           }
         }
+
       });
+
       layout.addView(checkBox);
     }
+    Button nextButton = new Button(getApplicationContext());
+    nextButton.setText("NEXT");
+    nextButton.setOnClickListener(new View.OnClickListener() {
+      public void onClick(View v) {
+        Intent intent = new Intent(getApplicationContext(), LabActivity.class);
+        ArrayList<String> diseases = new ArrayList<String>(Arrays.asList(util.getAllDiseases()));
+        diseases = util.filterBySymptoms(diseases, selectedSymptoms);
+        intent.putStringArrayListExtra(SYMPTOM_FILTERED_DISEASES, diseases); // should actually be passing filtered diseases
+        startActivity(intent);
+      }
+    });
+    layout.addView(nextButton);
     symptomsScrollView.addView(layout);
     setContentView(view);
 //        for(int i = 0; i < receiptItemsList.size(); i++){
